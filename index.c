@@ -2,6 +2,7 @@
 // phase3: index save logic
 // phase3: sorting index entries
 // phase3: staging files
+// phase3: verification
 #include "index.h"
 #include "tree.h"
 #include "pes.h"
