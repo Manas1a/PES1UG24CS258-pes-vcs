@@ -1,6 +1,7 @@
 // phase2: parsing index entries
 // phase2: building tree structure
 // extract filename from path
+// serialize tree into binary format
 #include "index.h"
 #include "pes.h"
 #include "tree.h"
