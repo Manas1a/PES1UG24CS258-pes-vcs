@@ -600,3 +600,101 @@ The following questions cover filesystem concepts beyond the implementation scop
 - **Git Internals** (Pro Git book): https://git-scm.com/book/en/v2/Git-Internals-Plumbing-and-Porcelain
 - **Git from the inside out**: https://codewords.recurse.com/issues/two/git-from-the-inside-out
 - **The Git Parable**: https://tom.preston-werner.com/2009/05/19/the-git-parable.html
+---
+
+# Phase 5: Theory
+
+# Phase 5: Theory Concepts
+
+This section explains important concepts related to version control systems and their implementation in PES.
+
+---
+
+## 1. Checkout
+
+Checkout is the operation used to switch the working directory to match a specific commit, branch, or file state.
+
+When a checkout is performed:
+
+* The files in the working directory are updated to reflect the selected commit.
+* The index (staging area) is also updated accordingly.
+* If switching branches, the HEAD pointer is updated to point to the new branch.
+
+In a system like PES:
+
+* Checkout would involve reading a tree object associated with a commit.
+* Reconstructing files from blob objects.
+* Writing them into the working directory.
+
+---
+
+## 2. Detached HEAD
+
+A detached HEAD state occurs when HEAD points directly to a commit instead of a branch.
+
+Normally:
+
+* HEAD → branch → commit
+
+In detached state:
+
+* HEAD → commit
+
+Implications:
+
+* New commits created in this state are not associated with any branch.
+* These commits can be lost if not referenced later.
+
+In PES:
+
+* This would happen if HEAD is updated with a raw commit hash instead of a branch reference.
+* It is useful for inspecting old states but risky for long-term work.
+
+---
+
+## 3. Garbage Collection
+
+Garbage collection is the process of removing unreferenced objects from the repository.
+
+In content-addressable storage:
+
+* Objects (blobs, trees, commits) are stored using hashes.
+* Some objects may become unreachable (not referenced by any commit or branch).
+
+Garbage collection:
+
+* Identifies unreachable objects.
+* Frees storage by deleting them.
+
+In PES:
+
+* This would involve scanning all reachable commits from HEAD.
+* Marking all referenced objects.
+* Deleting any objects not in use.
+
+---
+
+## 4. Race Conditions
+
+A race condition occurs when multiple operations try to access or modify shared data simultaneously, leading to inconsistent results.
+
+In version control systems, this can happen when:
+
+* Two processes try to write to the same object or index file.
+* Concurrent commits are made without proper synchronization.
+
+To prevent race conditions:
+
+* Atomic file operations (e.g., write to temp file then rename) are used.
+* File locking mechanisms can be implemented.
+
+In PES:
+
+* Object storage uses atomic rename to ensure consistency.
+* Index updates use temporary files and fsync to avoid corruption.
+
+---
+
+## Conclusion
+
+These concepts are fundamental to understanding how modern version control systems like Git function. The PES implementation mirrors these ideas at a simplified level, providing insight into real-world system design.
