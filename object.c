@@ -7,6 +7,7 @@
 // sha256 hashing logic
 // object path creation logic
 // temp file + atomic rename
+// object read + verification
 #include "pes.h"
 #include <stdio.h>
 #include <stdlib.h>
