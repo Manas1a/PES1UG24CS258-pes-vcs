@@ -194,8 +194,45 @@ int head_update(const ObjectID *new_commit) {
 //
 // Returns 0 on success, -1 on error.
 int commit_create(const char *message, ObjectID *commit_id_out) {
-    // TODO: Implement commit creation
-    // (See Lab Appendix for logical steps)
-    (void)message; (void)commit_id_out;
-    return -1;
+    ObjectID tree_id;
+    if (tree_from_index(&tree_id) != 0) return -1;
+
+    ObjectID parent_id;
+    int has_parent = (head_read(&parent_id) == 0);
+
+    char tree_hex[HASH_HEX_SIZE + 1];
+    char parent_hex[HASH_HEX_SIZE + 1];
+
+    hash_to_hex(&tree_id, tree_hex);
+    if (has_parent)
+        hash_to_hex(&parent_id, parent_hex);
+
+    const char *author = pes_author();
+
+    char buffer[2048];
+
+    if (has_parent) {
+        snprintf(buffer, sizeof(buffer),
+            "tree %s\n"
+            "parent %s\n"
+            "author %s\n"
+            "committer %s\n\n"
+            "%s\n",
+            tree_hex, parent_hex, author, author, message);
+    } else {
+        snprintf(buffer, sizeof(buffer),
+            "tree %s\n"
+            "author %s\n"
+            "committer %s\n\n"
+            "%s\n",
+            tree_hex, author, author, message);
+    }
+
+    if (object_write(OBJ_COMMIT, buffer, strlen(buffer), commit_id_out) != 0)
+        return -1;
+
+    if (head_update(commit_id_out) != 0)
+        return -1;
+
+    return 0;
 }
