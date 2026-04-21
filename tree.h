@@ -6,7 +6,9 @@
 
 #ifndef TREE_H
 #define TREE_H
+#include <stdint.h>
 
+uint32_t get_file_mode(const char *path);
 #include "pes.h"
 
 #define MAX_TREE_ENTRIES 1024

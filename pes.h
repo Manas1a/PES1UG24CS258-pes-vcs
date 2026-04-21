@@ -9,7 +9,6 @@
 #include <stdint.h>
 #include <stddef.h>
 #include <stdlib.h>
-
 // ─── Constants ───────────────────────────────────────────────────────────────
 
 #define HASH_SIZE 32        // SHA-256 produces 32 bytes
@@ -33,7 +32,9 @@ typedef enum {
 typedef struct {
     uint8_t hash[HASH_SIZE];
 } ObjectID;
-
+// object store functions
+int object_write(ObjectType type, const void *data, size_t len, ObjectID *id_out);
+int object_read(const ObjectID *id, ObjectType *type_out, void **data_out, size_t *len_out);
 // ─── Utility Functions (implement in object.c) ─────────────────────────────
 
 // Convert a binary hash to a 64-character hex string (+ null terminator).

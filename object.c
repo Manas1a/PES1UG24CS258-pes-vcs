@@ -1,13 +1,7 @@
 // object.c
 // Phase 1: Object Storage
 // Implements content-addressable storage using SHA-256 hashing
-// Functions:
-//  - object_write: stores objects in .pes/objects/
-//  - object_read: retrieves and verifies stored objects// sha256 hashing logic
-// sha256 hashing logic
-// object path creation logic
-// temp file + atomic rename
-// object read + verification
+
 #include "pes.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -57,8 +51,11 @@ int object_exists(const ObjectID *id) {
     return access(path, F_OK) == 0;
 }
 
+// ─── YOUR IMPLEMENTATION ─────────────────────────────────────────────────────
+
 int object_write(ObjectType type, const void *data, size_t len, ObjectID *id_out) {
-// Header
+
+    // create header
     char header[64];
     const char *type_str =
         (type == OBJ_BLOB) ? "blob" :
@@ -67,28 +64,31 @@ int object_write(ObjectType type, const void *data, size_t len, ObjectID *id_out
 
     int header_len = snprintf(header, sizeof(header), "%s %zu", type_str, len) + 1;
 
-    // Full object = header + data
+    // combine header + data
     size_t full_len = header_len + len;
     unsigned char *full = malloc(full_len);
     if (!full) return -1;
 
     memcpy(full, header, header_len);
- if (len > 0 && data != NULL)
-    memcpy(full + header_len, data, len);
 
-    // Compute hash
+    if (len > 0 && data != NULL) {
+        memcpy(full + header_len, data, len);
+    }
+
+    // compute SHA-256 hash
     compute_hash(full, full_len, id_out);
 
-    // Deduplication
+    // deduplication
     if (object_exists(id_out)) {
         free(full);
         return 0;
     }
 
-    // Path + directory
+    // create path
     char path[512];
     object_path(id_out, path, sizeof(path));
 
+    // create directory
     char dir[512];
     snprintf(dir, sizeof(dir), "%s", path);
     char *slash = strrchr(dir, '/');
@@ -97,9 +97,12 @@ int object_write(ObjectType type, const void *data, size_t len, ObjectID *id_out
         mkdir(dir, 0755);
     }
 
-    // Temp file
+    // create temp file
     char temp_path[512];
-    snprintf(temp_path, sizeof(temp_path), "%s.tmpXXXXXX", path);
+    if (snprintf(temp_path, sizeof(temp_path), "%s.tmpXXXXXX", path) >= (int)sizeof(temp_path)) {
+        free(full);
+        return -1;
+    }
 
     int fd = mkstemp(temp_path);
     if (fd < 0) {
@@ -107,7 +110,7 @@ int object_write(ObjectType type, const void *data, size_t len, ObjectID *id_out
         return -1;
     }
 
-    // Write
+    // write data
     if (write(fd, full, full_len) != (ssize_t)full_len) {
         close(fd);
         free(full);
@@ -117,7 +120,7 @@ int object_write(ObjectType type, const void *data, size_t len, ObjectID *id_out
     fsync(fd);
     close(fd);
 
-    // Atomic rename
+    // atomic rename
     if (rename(temp_path, path) != 0) {
         free(full);
         return -1;
@@ -135,8 +138,8 @@ int object_write(ObjectType type, const void *data, size_t len, ObjectID *id_out
 }
 
 int object_read(const ObjectID *id, ObjectType *type_out, void **data_out, size_t *len_out) {
-    // TODO: Implement
-char path[512];
+
+    char path[512];
     object_path(id, path, sizeof(path));
 
     FILE *f = fopen(path, "rb");
@@ -159,14 +162,14 @@ char path[512];
     }
     fclose(f);
 
-    // Find header
+    // find header
     unsigned char *nul = memchr(buf, '\0', file_size);
     if (!nul) {
         free(buf);
         return -1;
     }
 
-    // Parse type
+    // parse type
     if (strncmp((char *)buf, "blob", 4) == 0)
         *type_out = OBJ_BLOB;
     else if (strncmp((char *)buf, "tree", 4) == 0)
@@ -178,11 +181,11 @@ char path[512];
         return -1;
     }
 
-    // Parse size
+    // parse size
     size_t size;
     sscanf((char *)buf + ((*type_out == OBJ_COMMIT) ? 7 : 5), "%zu", &size);
 
-    // Verify hash
+    // verify hash
     ObjectID computed;
     compute_hash(buf, file_size, &computed);
 
@@ -191,7 +194,7 @@ char path[512];
         return -1;
     }
 
-    // Extract data
+    // extract data
     *len_out = size;
     *data_out = malloc(size);
     if (!*data_out) {
