@@ -602,8 +602,6 @@ The following questions cover filesystem concepts beyond the implementation scop
 - **The Git Parable**: https://tom.preston-werner.com/2009/05/19/the-git-parable.html
 ---
 
-# Phase 5: Theory
-
 # Phase 5: Theory Concepts
 
 This section explains important concepts related to version control systems and their implementation in PES.
