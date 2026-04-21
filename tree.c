@@ -2,6 +2,7 @@
 // phase2: building tree structure
 // extract filename from path
 // serialize tree into binary format
+// store tree object in object database
 #include "index.h"
 #include "pes.h"
 #include "tree.h"
