@@ -4,6 +4,9 @@
 // Functions:
 //  - object_write: stores objects in .pes/objects/
 //  - object_read: retrieves and verifies stored objects// sha256 hashing logic
+// sha256 hashing logic
+// object path creation logic
+
 #include "pes.h"
 #include <stdio.h>
 #include <stdlib.h>
