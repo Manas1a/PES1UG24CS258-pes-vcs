@@ -16,5 +16,9 @@ test_tree
 *~
 .vscode/
 .idea/
-
+.pes/
+*.o
+pes
+file*.txt
+hello.txt
 
